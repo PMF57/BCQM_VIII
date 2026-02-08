@@ -1,0 +1,69 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=25mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[british]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xurl}
+\usepackage{hyperref}
+
+\graphicspath{{./}{figures/}}
+
+\title{BCQM Stage--3 Robustness Panel\\Knee band and clock metastability across conditions (v0.2)}
+\author{Peter M.~Ferguson \\ \textit{Independent Researcher}}
+\date{6 February 2026}
+
+\begin{document}
+\maketitle
+
+\section*{Scope}
+This one-page panel summarises robustness checks over the knee band \(N\in\{22,23,24,28\}\) under four conditions:
+(i) bins=10 at \(n=0.8,w^\*=0.30\);
+(ii) \(n=0.7\) at bins=20, \(w^\*=0.30\);
+(iii) \(w^\*=0.25\) at bins=20, \(n=0.8\);
+(iv) \(w^\*=0.35\) at bins=20, \(n=0.8\).
+Each point uses 20 seeds per \(N\).
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.92\linewidth]{robustness_phi_panel.pdf}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.92\linewidth]{robustness_plowQ_panel.pdf}
+\end{figure}
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Condition & $N$ & $\Phi$ & $p_{\mathrm{lowQ}}$ & $Q_{\mathrm{high}}$ & $d_{L2}$ mean & $d_{L2}$ p90 \\
+\midrule
+bins=10, n=0.8, w*=0.30 & 22 & 0.617±0.051 & 0.25 & 5.157±0.104 & 0.0018±0.0011 & 0.0035 \\
+bins=10, n=0.8, w*=0.30 & 23 & 0.511±0.049 & 0.30 & 5.296±0.112 & 0.0015±0.0009 & 0.0029 \\
+bins=10, n=0.8, w*=0.30 & 24 & 0.460±0.039 & 0.10 & 5.372±0.127 & 0.0019±0.0013 & 0.0041 \\
+bins=10, n=0.8, w*=0.30 & 28 & 0.269±0.033 & 0.10 & 5.739±0.104 & 0.0011±0.0007 & 0.0021 \\
+bins=20, n=0.7, w*=0.30 & 22 & 0.146±0.005 & 0.10 & 5.159±0.138 & 0.0010±0.0007 & 0.0020 \\
+bins=20, n=0.7, w*=0.30 & 23 & 0.138±0.005 & 0.25 & 5.327±0.123 & 0.0006±0.0004 & 0.0011 \\
+bins=20, n=0.7, w*=0.30 & 24 & 0.132±0.004 & 0.00 & 5.379±0.104 & 0.0006±0.0003 & 0.0010 \\
+bins=20, n=0.7, w*=0.30 & 28 & 0.112±0.000 & 0.00 & 5.779±0.140 & 0.0005±0.0003 & 0.0009 \\
+bins=20, n=0.8, w*=0.25 & 22 & 0.619±0.034 & 0.20 & 5.027±0.348 & 0.0009±0.0005 & 0.0016 \\
+bins=20, n=0.8, w*=0.25 & 23 & 0.532±0.028 & 0.15 & 5.273±0.122 & 0.0013±0.0008 & 0.0026 \\
+bins=20, n=0.8, w*=0.25 & 24 & 0.438±0.028 & 0.10 & 5.358±0.115 & 0.0010±0.0006 & 0.0018 \\
+bins=20, n=0.8, w*=0.25 & 28 & 0.273±0.018 & 0.00 & 5.799±0.126 & 0.0010±0.0006 & 0.0019 \\
+bins=20, n=0.8, w*=0.35 & 22 & 0.639±0.037 & 0.15 & 5.145±0.164 & 0.0009±0.0006 & 0.0016 \\
+bins=20, n=0.8, w*=0.35 & 23 & 0.542±0.044 & 0.10 & 5.209±0.112 & 0.0013±0.0008 & 0.0024 \\
+bins=20, n=0.8, w*=0.35 & 24 & 0.447±0.022 & 0.20 & 5.364±0.136 & 0.0011±0.0007 & 0.0023 \\
+bins=20, n=0.8, w*=0.35 & 28 & 0.260±0.019 & 0.00 & 5.789±0.097 & 0.0012±0.0015 & 0.0026 \\
+\bottomrule
+\end{tabular}
+\caption{Robustness summary for the knee band (N=22,23,24,28). $p_{\mathrm{lowQ}}$ uses the threshold $Q_{\mathrm{clock}}<3$. $Q_{\mathrm{high}}$ is computed over runs with $Q_{\mathrm{clock}}\ge 3$. Ball-growth stability uses within-N pairwise $d_{L2}$ distances (20 seeds ⇒ 190 pairs).}
+\label{tab:robustness}
+\end{table}
+
+\end{document}

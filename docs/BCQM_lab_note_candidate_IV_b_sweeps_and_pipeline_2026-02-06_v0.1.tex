@@ -1,0 +1,186 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=25mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[british]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{csquotes}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{xurl}
+\usepackage{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+\usepackage{enumitem}
+\setlist{nosep}
+
+\title{BCQM Stage--3 Lab Note\\Finite-$N$ crossover and clock metastability sweeps (candidate ``BCQM\_IV\_b'' note) (v0.1)}
+\author{Peter M.~Ferguson \\ \textit{Independent Researcher}}
+\date{6 February 2026}
+
+\begin{document}
+\maketitle
+
+\section*{Purpose}
+This lab note records the sweep campaign triggered by the question: ``is the finite-$N$ crossover and clock metastability near the cloth knee strong enough to justify a standalone note (suggested: BCQM\_IV\_b)?''
+
+We document:
+(i) the two analysis programs modified to support publication-grade evidence,
+(ii) all runs executed and artefacts produced,
+(iii) results and interpretation (knee location, mixed/metastable band, robustness),
+(iv) further runs that would strengthen the claim, and
+(v) a concluding assessment of ``claim strength'' and next steps.
+
+\section{Programs changed (what and why)}
+Two analysis programs were modified during this campaign.
+
+\subsection{1) \texttt{bcqm\_vii\_cloth/analysis/summarise\_runs.py} (patched to v0.2)}
+\paragraph{Problem.}
+In multi-$N$ sweep runs, the original script collected ball-growth curves as \texttt{(seed, frac\_curve)} and wrote a single file
+\texttt{<tag>\_ballgrowth\_pairwise.csv}. Because the same seed IDs repeat across different $N$ values, the resulting pairwise file mixed
+different $N$ levels and was not interpretable for per-$N$ stability claims.
+
+\paragraph{Fix (v0.2).}
+The patched script:
+\begin{itemize}
+\item stores curves as \texttt{(N, n, seed, frac\_curve)};
+\item writes a \emph{global} pairwise CSV containing \texttt{N\_a, n\_a, seed\_a, N\_b, n\_b, seed\_b, d\_l2};
+\item additionally writes one \emph{per-(N,n)} file for each group, e.g.\\
+\texttt{<tag>\_ballgrowth\_pairwise\_N22\_n0p8.csv}, \texttt{...N23...}, etc.
+\end{itemize}
+This resolves the ambiguity without any re-simulation; only the analysis step is re-run on existing outputs.
+
+\subsection{2) \texttt{ball\_growth\_ensemble\_summary.py} (patched to v0.1.2)}
+This script regenerates ensemble ball-growth \emph{figures} from existing CSV inputs (it does not generate pairwise distances). It was updated
+to conform to the BCQM plotting defaults:
+\begin{itemize}
+\item figure title placed above the chart area (\texttt{fig.suptitle(...)} with reserved layout space);
+\item no embedded ``Fig.\ n'' text in plot titles.
+\end{itemize}
+
+\section{Experimental design and run set}
+All sweeps are in the Path~A Stage--2 cloth regime, with fixed scaffold:
+\begin{itemize}
+\item \(W_{\mathrm{coh}}=100\), hits1 cloth extraction (\texttt{min\_bin\_hits}=1), \texttt{min\_concurrency}=2,
+\item epoch schedule: \texttt{steps\_total}=20000, burn-in 5000, measurement 15000,
+\item bins=20 unless stated, and \(n\) indicated per run,
+\item seeds are independent across runs (distinct \texttt{seeds.start}).
+\end{itemize}
+
+\subsection{Broad sweep (light) and broad subset (heavy)}
+\begin{itemize}
+\item \textbf{Light:} \(N\in\{1,2,4,8,16,32,64,128\}\), 5 seeds per $N$, tracing/ledger off.\\
+Outputs: \texttt{sweep\_N1\_128\_light\_run\_summary.csv} and \texttt{sweep\_N1\_128\_light\_ballgrowth\_pairwise.csv}.
+\item \textbf{Heavy subset:} \(N\in\{32,64,128\}\), 5 seeds per $N$, tracing/ledger on.\\
+Outputs: \texttt{sweep\_N32\_128\_heavy\_run\_summary.csv} and \texttt{sweep\_N32\_128\_heavy\_ballgrowth\_pairwise.csv}.
+\end{itemize}
+Empirical note: heavy logging did not materially increase wall time relative to light on the reference machine (disk use increased).
+
+\subsection{Knee zoom (heavy) and micro knee (heavy)}
+\begin{itemize}
+\item \textbf{Knee zoom:} \(N\in\{12,16,20,24,28,32,40,48\}\), 5 seeds per $N$.\\
+Outputs: \texttt{sweep\_N12\_48\_heavy\_run\_summary.csv} and \texttt{sweep\_N12\_48\_heavy\_ballgrowth\_pairwise.csv}.
+\item \textbf{Micro knee:} \(N\in\{21,22,23,24\}\), 5 seeds per $N$.\\
+Outputs: \texttt{sweep\_N21\_24\_heavy\_run\_summary.csv} and \texttt{sweep\_N21\_24\_heavy\_ballgrowth\_pairwise.csv}.
+\end{itemize}
+
+\subsection{Metastability confirmations (20 seeds; heavy)}
+Single-$N$ runs with 20 seeds:
+\begin{itemize}
+\item \(N=22\): \texttt{sweep\_N22\_20seeds\_run\_summary.csv} (and pairwise file).
+\item \(N=23\): \texttt{sweep\_N23\_20seeds\_run\_summary.csv} (and pairwise file).
+\item \(N=24\): \texttt{sweep\_N24\_20seeds\_run\_summary.csv} (and pairwise file).
+\item \(N=28\): \texttt{sweep\_N28\_20seeds\_run\_summary.csv} (and pairwise file).
+\end{itemize}
+Here ``low-$Q$'' is defined by \(Q_{\mathrm{clock}}<3\) (empirically separates the locked and non-locked modes in these datasets).
+
+\subsection{Robustness sweeps (20 seeds per $N$; light)}
+All run on \(N\in\{22,23,24,28\}\), 20 seeds per $N$:
+\begin{itemize}
+\item \textbf{Bins robustness:} bins=10, \(n=0.8\), \(w^\*=0.30\) $\rightarrow$ outputs tagged \texttt{bins10\_n0p8\_wstar030\_*}.
+\item \textbf{Coherence robustness:} \(n=0.7\), bins=20, \(w^\*=0.30\) $\rightarrow$ outputs tagged \texttt{n0p7\_bins20\_wstar030\_*}.
+\item \textbf{Space-strength robustness:} \(w^\*=0.25\) and \(w^\*=0.35\) at \(n=0.8\), bins=20 $\rightarrow$ outputs tagged \texttt{n0p8\_bins20\_wstar025\_*} and \texttt{...035...}.
+\end{itemize}
+
+After patching \texttt{summarise\_runs.py}, each robustness run produces:
+\begin{itemize}
+\item \texttt{<tag>\_run\_summary.csv},
+\item \texttt{<tag>\_ballgrowth\_pairwise.csv} (global, with \texttt{N\_a} and \texttt{N\_b}),
+\item \texttt{<tag>\_ballgrowth\_pairwise\_N22\_n...csv} etc. (per-$N$ files; 190 pairs each).
+\end{itemize}
+
+\section{Results}
+We report three core outcomes: (i) a sharp finite-$N$ core/halo crossover, (ii) a probabilistic clock metastability band, and (iii) robustness of the crossover under bins and \(w^\*\), with strong dependence on \(n\).
+
+\subsection{R1: Core/halo crossover (``knee'')}
+Define
+\[
+\Phi(N) \equiv \frac{N_{\mathrm{core}}}{N_{\mathrm{total}}} \,,
+\]
+where $N_{\mathrm{core}}$ is the GCC core event count and $N_{\mathrm{total}}$ includes core+halo events.
+
+From the knee zoom and micro knee runs:
+\begin{itemize}
+\item The sharp crossover band lies at \(N\approx 22\text{--}24\).
+\item The \(\Phi=0.5\) crossing occurs between \(N=23\) and \(N=24\) in the 5-seed micro run.
+\end{itemize}
+
+At \(n=0.8\), bins=20, \(w^\*=0.30\) (20-seed confirmations), representative values:
+\begin{itemize}
+\item \(N=22:\ \Phi\approx 0.64\),
+\item \(N=23:\ \Phi\approx 0.52\),
+\item \(N=24:\ \Phi\approx 0.46\),
+\item \(N=28:\ \Phi\approx 0.26\).
+\end{itemize}
+
+\subsection{R2: Clock/ordering metastability band}
+Define ``locked'' versus ``low-$Q$'' by \(Q_{\mathrm{clock}}<3\). The 20-seed confirmations show a mixed/metastable band:
+\begin{itemize}
+\item \(N=22:\ 5/20\) low-$Q$ outcomes (25\%),
+\item \(N=23:\ 4/20\) low-$Q$ outcomes (20\%),
+\item \(N=24:\ 2/20\) low-$Q$ outcomes (10\%),
+\item \(N=28:\ 0/20\) low-$Q$ outcomes (0\%); unimodal high-$Q$ state.
+\end{itemize}
+The lock variable \(L\) mirrors this split tightly; the metastability is primarily in the time/ordering subsystem (\(Q_{\mathrm{clock}},L\)), not in the coarse cloth counts.
+
+\subsection{R3: Robustness checks (bins, \(n\), and \(w^\*\))}
+\paragraph{Bins (10 vs 20).}
+The \(\Phi\) crossover location is stable under bins=10. However, the low-$Q$ tail can broaden for shorter binning: in the bins=10 run, a small low-$Q$ fraction remains at \(N=28\) (2/20), while bins=20 showed 0/20 for the corresponding baseline seed range.
+
+\paragraph{Space-strength (\(w^\*\)).}
+At \(n=0.8\), varying \(w^\*\in\{0.25,0.35\}\) does not move the knee location appreciably (the \(\Phi\) crossing remains between \(N=23\) and \(N=24\)). The low-$Q$ tail fractions shift modestly (order 0.05--0.10) within the band; the high-$Q$ locked band remains tight.
+
+\paragraph{Coherence (\(n\)).}
+The \(n=0.7\) sweep shows that \(\Phi\) is already small (halo-dominant) at \(N=22\text{--}28\) (e.g.\ \(\Phi\sim 0.11\text{--}0.15\)), indicating the knee shifts to much smaller $N$ (or the regime changes qualitatively). The low-$Q$ tail is also reduced and disappears earlier (0/20 at \(N=24\) and \(N=28\) in this seed range).
+
+\subsection{Ball-growth stability (within-$N$ pairwise \(d_{L2}\))}
+Using the patched per-$N$ pairwise outputs (190 pairs per $N$), the within-$N$ ball-growth distances \(d_{L2}\) remain small (order $10^{-3}$) across all robustness conditions. This supports the view that the coarse cloth diagnostics remain stable while the clock subsystem exhibits probabilistic lock failure in the knee band.
+
+\section{Interpretation}
+\begin{itemize}
+\item \textbf{Two coupled subsystems:} geometry/adjacency (cloth core/halo) versus ordering (clock) behave differently. The knee in \(\Phi(N)\) and the metastable band in \(Q_{\mathrm{clock}}\) co-occur in the same finite-$N$ region but are not identical phenomena.
+\item \textbf{Probabilistic lock-in:} ``time ordering'' (as measured by \(Q_{\mathrm{clock}}\)) is not a hard threshold at \(N\approx 23\); it is a probability-of-lock that rises with $N$ and becomes robust by \(N\approx 28\) (bins=20, n=0.8, in the tested parameter range).
+\item \textbf{Parameter dependence:} the crossover is strong in \(n=0.8\) and shifts markedly with \(n\). Binning and \(w^\*\) modulate the low-$Q$ tail but do not destroy the qualitative picture.
+\item \textbf{Methodology:} heavy logging (ledger+trace) is feasible on the reference machine without wall-time penalty, but disk usage scales strongly (order GB per run folder).
+\end{itemize}
+
+\section{Further runs that would be helpful}
+To strengthen a standalone note (``BCQM\_IV\_b'') while keeping scope minimal:
+\begin{enumerate}
+\item \textbf{Locate the knee at \(n=0.7\):} short sweep \(N\in\{8,12,16,20,22\}\) with 20 seeds (light) to find the \(\Phi=0.5\) crossing.
+\item \textbf{One higher coherence point:} repeat \(N\in\{22,23,24,28\}\) at \(n=0.9\) (20 seeds, light) to map how the knee moves with $n$.
+\item \textbf{Tail calibration:} repeat bins=10 and bins=20 at \(N=28\) with 40 seeds to bound the residual low-$Q$ tail probability more tightly.
+\item \textbf{Optional \(w_{\mathrm{lock}}\) axis:} test whether the cloth extraction threshold shifts \(\Phi(N)\) significantly (measurement robustness).
+\end{enumerate}
+
+\section{Conclusion (is it strong enough for a standalone note?)}
+Yes, the result is strong enough to warrant a focused standalone note:
+\begin{itemize}
+\item The knee location is sharply localised at \(N\approx 22\text{--}24\) for \(n=0.8\), with a clear \(\Phi=0.5\) crossing between \(N=23\) and \(N=24\).
+\item The clock subsystem exhibits a reproducible mixed/metastable band in the same region, quantified by \(p_{\mathrm{lowQ}}(N)\), and becomes robustly locked by \(N=28\) (bins=20).
+\item Robustness sweeps show the qualitative picture survives changes in bins and \(w^\*\), while shifting strongly with \(n\), which is itself an informative and falsifiable dependence.
+\end{itemize}
+The claim should be framed as a finite-$N$ crossover with a probabilistic lock band (not a proved thermodynamic phase transition), but it does ``stake the claim'' for an emergent core+halo regime with ordering metastability in the cloth programme.
+
+\end{document}

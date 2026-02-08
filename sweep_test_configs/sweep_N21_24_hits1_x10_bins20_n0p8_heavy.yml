@@ -1,0 +1,73 @@
+schema_version: vi_spacetime_config_v0.1
+experiment_id: sweep_N21_24_hits1_x10_bins20_n0p8_heavy
+description: 'Stage-2 N-sweep (knee micro-zoom; heavy): N in {21,22,23,24} at n=0.8, hits1 cloth, x10 epoch, bins=20. Ledger+thread tracing ON for locality/turnover-style follow-ons.'
+variant: full
+
+engine:
+  mode: v_glue
+
+sizes: [21, 22, 23, 24]
+
+seeds:
+  count: 5
+  start: 75000
+
+scan:
+  n_values: [0.8]
+
+steps_total: 20000
+burn_in_epochs: 5000
+measure_epochs: 15000
+
+W_coh: 100
+
+active_window:
+  hops: 100
+  mode: recency
+
+glue:
+  mapping_mode: linear
+  profile: composite_all
+  profile_axes: [phase_lock, cadence_disorder]
+  axes:
+    shared_bias: {min: 0.0, max: 0.0}
+    phase_lock: {min: 0.0, max: 0.0}
+    domains: {min: 0.0, max: 0.0}
+    cadence_disorder: {min: 1.0, max: 1.0}
+
+space:
+  enabled: true
+  p_reuse_mode: from_n
+  w_star: 0.3
+  beta_junc: 1.5
+  domain_match: true
+  allow_cocreate_merge: false
+  log_island_timeseries: false
+
+crosslinks:
+  allow_junctions: true
+  new_event_policy: unique_per_thread
+
+observables:
+  beta_junc: 1.5
+
+snapshots:
+  enabled: false
+
+cloth:
+  enabled: true
+  bins: 20
+  min_bin_hits: 1
+  min_concurrency: 2
+  w_lock: 0.1
+  include_ledger: true
+  trace_threads: true
+  trace_stride: 1
+
+output:
+  out_dir: sweep_test_output/outputs_cloth/sweep_N21_24_hits1_x10_bins20_n0p8_heavy
+  timeseries_bins: 20
+  write_timeseries: false
+
+provenance:
+  notes: 'Micro-zoom around the Phi cliff (N≈22–23). Heavy config enables ledger+thread tracing for deeper Gate-4 and turnover analyses.'

@@ -1,0 +1,52 @@
+# macOS
+.DS_Store
+__MACOSX/
+._*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+pip-wheel-metadata/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Local run outputs (do not commit)
+outputs_cloth/
+sweep_test_output/outputs_cloth/
+sweep_test_output/**/RUN_METRICS_*.json
+sweep_test_output/**/RUN_REPORT*.txt
+
+# Large temporary archives
+*.zip
+*.tar
+*.tar.gz
+*.7z
+
+# LaTeX build artefacts
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+
+# Editor
+.vscode/
+.idea/

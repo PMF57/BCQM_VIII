@@ -1,0 +1,170 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=25mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[british]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{csquotes}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\setlist{nosep}
+\usepackage{xurl}
+\usepackage{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+\usepackage{graphicx}
+\graphicspath{{./}{figures/}}
+
+\title{BCQM Stage--3 Lab Note\\N-sweep and knee/clock-metastability study (v0.1)}
+\author{Peter M.~Ferguson \\ \textit{Independent Researcher}}
+\date{6 February 2026}
+
+\begin{document}
+\maketitle
+
+\section*{Purpose}
+Record and interpret a sequence of Stage--2/Stage--3 exploratory sweeps designed to (i) characterise scaling with ensemble size \(N\), (ii) locate the ``knee'' (core\(\rightarrow\)core+halo crossover), and (iii) test whether the time/ordering signal (\(Q_{\mathrm{clock}}\)) exhibits a mixed/metastable band near the crossover.
+
+\section*{Runs executed (summary)}
+All runs use \(n=0.8\), hits1 cloth extraction (min\_bin\_hits=1), \(W_{\mathrm{coh}}=100\), bins=20, x10 epoch, and 5 seeds unless otherwise noted.
+\begin{itemize}
+\item \textbf{Broad sweep (light):} \(N\in\{1,2,4,8,16,32,64,128\}\), tracing/ledger disabled; runtime \(\approx\) 50 minutes on Mac mini M4 (24 GB).
+\item \textbf{Broad subset (heavy):} \(N\in\{32,64,128\}\), ledger+thread tracing enabled; runtime \(\approx\) 50 minutes (same wall time as light).
+\item \textbf{Knee zoom (heavy):} \(N\in\{12,16,20,24,28,32,40,48\}\), ledger+thread tracing enabled; runtime \(\approx\) 100 minutes.
+\item \textbf{Micro knee (heavy):} \(N\in\{21,22,23,24\}\), 5 seeds.
+\item \textbf{Metastability confirmations (heavy, 20 seeds):} single-\(N\) runs at \(N=22\), \(N=23\), \(N=24\), and \(N=28\).
+\end{itemize}
+
+\section*{Broad scaling results}
+\begin{table}[ht]
+\centering
+\begin{tabular}{@{}rcccc@{}}
+\toprule
+$N$ & $\Phi$ & $Q_{\mathrm{clock}}$ & core events & halo events \\
+\midrule
+1 & 1.0000 $\pm$ 0.0000 & 0.035 $\pm$ 0.032 & 3352 $\pm$ 58 & 0 $\pm$ 0 \\
+2 & 1.0000 $\pm$ 0.0000 & 0.880 $\pm$ 0.143 & 6273 $\pm$ 73 & 0 $\pm$ 0 \\
+4 & 1.0000 $\pm$ 0.0000 & 0.914 $\pm$ 0.195 & 11994 $\pm$ 66 & 0 $\pm$ 0 \\
+8 & 1.0000 $\pm$ 0.0000 & 1.046 $\pm$ 0.231 & 23458 $\pm$ 137 & 0 $\pm$ 0 \\
+16 & 0.9985 $\pm$ 0.0016 & 1.853 $\pm$ 1.982 & 46362 $\pm$ 148 & 69 $\pm$ 76 \\
+32 & 0.1840 $\pm$ 0.0248 & 6.135 $\pm$ 0.207 & 17008 $\pm$ 2277 & 75417 $\pm$ 2401 \\
+64 & 0.0747 $\pm$ 0.0003 & 8.816 $\pm$ 0.222 & 13730 $\pm$ 25 & 170121 $\pm$ 381 \\
+128 & 0.0381 $\pm$ 0.0001 & 12.411 $\pm$ 0.313 & 13993 $\pm$ 12 & 352986 $\pm$ 649 \\
+\bottomrule
+\end{tabular}
+\caption{Broad N-sweep summary (combined: light for $N\leq16$, heavy for $N\geq32$). Means and standard deviations are across 5 seeds per N.}
+\label{tab:wide_sweep}
+\end{table}
+
+Figure~\ref{fig:phi_wide} and Figure~\ref{fig:q_wide} visualise the same trends. The broad sweep shows:
+\begin{itemize}
+\item a sharp core+halo transition between \(N=16\) and \(N=32\) in the powers-of-two scan (clarified by the knee zoom);
+\item a rapidly decreasing core fraction \(\Phi\) for \(N\ge 32\) with a core size that saturates while the halo grows with \(N\);
+\item an increasing and increasingly stable \(Q_{\mathrm{clock}}\) with \(N\), supporting the interpretation that ordered time becomes more robust as the ensemble scales.
+\end{itemize}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.92\linewidth]{A_phi_vs_N_combined.pdf}
+  \caption{Core fraction \(\Phi\) versus \(N\) (combined light/heavy).}
+  \label{fig:phi_wide}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.92\linewidth]{B_Qclock_vs_N_combined.pdf}
+  \caption{Clock quality \(Q_{\mathrm{clock}}\) versus \(N\) (combined light/heavy).}
+  \label{fig:q_wide}
+\end{figure}
+
+\section*{Knee localisation}
+\begin{table}[ht]
+\centering
+\begin{tabular}{@{}rcccc@{}}
+\toprule
+$N$ & $\Phi$ & $Q_{\mathrm{clock}}$ & core events & halo events \\
+\midrule
+12 & 1.0000 $\pm$ 0.0000 & 1.480 $\pm$ 0.537 & 34831 $\pm$ 95 & 0 $\pm$ 0 \\
+16 & 0.9990 $\pm$ 0.0007 & 3.021 $\pm$ 1.906 & 46388 $\pm$ 200 & 45 $\pm$ 33 \\
+20 & 0.8708 $\pm$ 0.0445 & 3.918 $\pm$ 2.112 & 50297 $\pm$ 2535 & 7464 $\pm$ 2574 \\
+24 & 0.4337 $\pm$ 0.0240 & 4.608 $\pm$ 1.833 & 30012 $\pm$ 1594 & 39189 $\pm$ 1772 \\
+28 & 0.2552 $\pm$ 0.0206 & 5.740 $\pm$ 0.176 & 20588 $\pm$ 1647 & 60081 $\pm$ 1701 \\
+32 & 0.1861 $\pm$ 0.0144 & 6.231 $\pm$ 0.058 & 17154 $\pm$ 1378 & 75015 $\pm$ 1148 \\
+40 & 0.1187 $\pm$ 0.0051 & 6.850 $\pm$ 0.171 & 13679 $\pm$ 557 & 101604 $\pm$ 810 \\
+48 & 0.0990 $\pm$ 0.0018 & 7.558 $\pm$ 0.067 & 13696 $\pm$ 273 & 124585 $\pm$ 292 \\
+\bottomrule
+\end{tabular}
+\caption{Knee-zoom sweep (N=12–48). Heavy logging enabled; means and standard deviations across 5 seeds per N.}
+\label{tab:knee_zoom}
+\end{table}
+
+The knee zoom tightens the location of the crossover: \(\Phi\) drops steeply between \(N=20\) and \(N=24\), with \(\Phi<0.5\) by \(N=24\). The core event count peaks around \(N\approx 20\) and then decreases, while the halo continues to grow, indicating a genuine rebalancing rather than simple halo accretion.
+
+\section*{Micro knee (N=21--24)}
+\begin{table}[ht]
+\centering
+\begin{tabular}{@{}rcccc@{}}
+\toprule
+$N$ & $\Phi$ & $Q_{\mathrm{clock}}$ & core events & halo events \\
+\midrule
+21 & 0.8008 $\pm$ 0.0493 & 2.386 $\pm$ 2.435 & 48426 $\pm$ 2886 & 12050 $\pm$ 3003 \\
+22 & 0.6625 $\pm$ 0.0456 & 4.259 $\pm$ 1.980 & 42008 $\pm$ 2902 & 21398 $\pm$ 2886 \\
+23 & 0.5427 $\pm$ 0.0258 & 5.232 $\pm$ 0.083 & 36080 $\pm$ 1740 & 30400 $\pm$ 1694 \\
+24 & 0.4704 $\pm$ 0.0197 & 5.333 $\pm$ 0.086 & 32609 $\pm$ 1364 & 36712 $\pm$ 1374 \\
+\bottomrule
+\end{tabular}
+\caption{Micro-sweep around the crossover (N=21–24). Heavy logging enabled; means and standard deviations across 5 seeds per N.}
+\label{tab:knee_micro}
+\end{table}
+
+Figure~\ref{fig:phi_micro} shows that the \(\Phi=0.5\) crossing occurs between \(N=23\) and \(N=24\) in the 5-seed micro run.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.92\linewidth]{C_phi_knee_micro.pdf}
+  \caption{Core fraction \(\Phi\) across the micro knee sweep (N=21--24).}
+  \label{fig:phi_micro}
+\end{figure}
+
+\section*{Clock metastability (20-seed confirmations)}
+\begin{table}[ht]
+\centering
+\begin{tabular}{@{}rrrrrcc@{}}
+\toprule
+$N$ & seeds & low-$Q$ & $p(\mathrm{low}\ Q)$ & $\Phi$ & $Q_{\mathrm{clock}}$ (all) & $Q_{\mathrm{clock}}$ (high band) \\
+\midrule
+22 & 20 & 5 & 0.25 & 0.6408 $\pm$ 0.0460 & 4.139 $\pm$ 1.870 & 5.177 $\pm$ 0.096 \\
+23 & 20 & 4 & 0.20 & 0.5236 $\pm$ 0.0307 & 4.421 $\pm$ 1.806 & 5.274 $\pm$ 0.114 \\
+24 & 20 & 2 & 0.10 & 0.4612 $\pm$ 0.0333 & 4.881 $\pm$ 1.424 & 5.336 $\pm$ 0.136 \\
+28 & 20 & 0 & 0.00 & 0.2635 $\pm$ 0.0246 & 5.846 $\pm$ 0.143 & 5.846 $\pm$ 0.143 \\
+\bottomrule
+\end{tabular}
+\caption{Clock metastability check (20-seed runs at fixed N). ``low-$Q$'' counts seeds with $Q_{\mathrm{clock}}<3$. The high-band statistics are computed over seeds with $Q_{\mathrm{clock}}\ge 3$.}
+\label{tab:clock_meta}
+\end{table}
+
+The 20-seed confirmations establish that the mixed/metastable band is primarily a clock/ordering phenomenon:
+\begin{itemize}
+\item At \(N=22\), \(Q_{\mathrm{clock}}\) is clearly bimodal: a low-\(Q\) minority coexists with a tight high-\(Q\) locked band.
+\item At \(N=23\) and \(N=24\), the low-\(Q\) minority persists but with decreasing prevalence.
+\item By \(N=28\), no low-\(Q\) outliers were observed (0/20); \(Q_{\mathrm{clock}}\) is unimodal and tight, indicating robust lock-in.
+\end{itemize}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.92\linewidth]{D_lowQ_fraction.pdf}
+  \caption{Fraction of low-\(Q\) seeds (defined by \(Q_{\mathrm{clock}}<3\)) in the 20-seed confirmations.}
+  \label{fig:lowq}
+\end{figure}
+
+\section*{Conclusions}
+\begin{itemize}
+\item The core\(\rightarrow\)core+halo crossover is sharp and lies in a narrow band around \(N\approx 22\)–24, with \(\Phi<0.5\) by \(N=24\).
+\item The ordering/clock subsystem shows a mixed/metastable band in the same region: the probability of a low-\(Q\) outcome decreases with \(N\) and vanishes (in these samples) by \(N=28\).
+\item Across the metastable band, the spatial cloth diagnostics remain broadly stable; the ``mixedness'' is primarily in the time/ordering variables (\(Q_{\mathrm{clock}}\), \(L\)).
+\item Heavy logging (ledger+tracing) did not materially increase wall time relative to light runs on the reference machine, indicating runtime is dominated by the core simulation loop while disk usage becomes the main cost.
+\end{itemize}
+
+\end{document}
