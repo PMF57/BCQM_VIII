@@ -20,6 +20,7 @@ Key families:
   - `sweep_N24_hits1_x10_bins20_n0p8_20seeds_heavy.yml`
   - `sweep_N28_hits1_x10_bins20_n0p8_20seeds_heavy.yml`
 - Robustness:
+  - `sweep_minconc3_N22_28_n0p8_bins20_wstar0p30_light.yml` (control: min_concurrency=3 extraction-definition check)
   - `sweep_bins10_N22_28_n0p8_wstar0p30_light.yml`
   - `sweep_bins20_N22_28_n0p7_wstar0p30_light.yml`
   - `sweep_bins20_N22_28_n0p8_wstar0p25_light.yml`
@@ -38,6 +39,7 @@ These are intentionally not committed to keep the repo small.
 All committed CSVs are in `csv/`.
 
 Types:
+- Control (min_concurrency=3): `minconc3_n0p8_bins20_wstar030_run_summary.csv` and `minconc3_n0p8_bins20_wstar030_ballgrowth_pairwise_N*.csv`.
 - `*_run_summary.csv` — per‑run scalars (Phi, Q_clock, counts, etc.)
 - `*_ballgrowth_pairwise.csv` — global pairwise dL2 with N_a/N_b (patched format)
 - `*_ballgrowth_pairwise_N<NN>_n<nn>.csv` — within‑N pairwise dL2 (190 rows for 20 seeds)

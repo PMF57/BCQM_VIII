@@ -45,3 +45,9 @@ python3 bcqm_vii_cloth/analysis/summarise_runs.py \
 - `docs/EVIDENCE_MANIFEST.md` — authoritative mapping: runs/configs → CSVs → figures/notes.
 - `docs/BCQM_lab_note_candidate_IV_b_sweeps_and_pipeline_2026-02-06_v0.1.tex` — full sweep log + interpretation.
 - `docs/BCQM_robustness_panel_note_v0.2_2026-02-06.tex` — one‑page robustness panel.
+
+
+## BCQM VII_b paper (this work)
+- Concept DOI: 10.5281/zenodo.18549145
+- Version 1 DOI: 10.5281/zenodo.18549146
+

@@ -4,6 +4,11 @@ _Last updated: 6 February 2026_
 
 This file records where the code came from, what was changed, and how the sweep artefacts in `csv/` were produced.
 
+
+## BCQM VII_b paper (this repo)
+- Concept DOI: 10.5281/zenodo.18549145
+- Version 1 DOI: 10.5281/zenodo.18549146
+
 ## Upstream lineage (BCQM VII)
 BCQM VII is published/locked. This repo was created as a **new workstream** after BCQM VII v1.0.
 
