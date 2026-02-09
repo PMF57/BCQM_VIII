@@ -48,6 +48,7 @@ python3 bcqm_vii_cloth/analysis/summarise_runs.py \
 
 
 ## BCQM VII_b paper (this work)
+The paper PDF and official versioned manuscript are archived on Zenodo. This repository contains the code, configs, CSV artefacts, and lab notes supporting the paper.
 - Concept DOI: 10.5281/zenodo.18549145
 - Version 1 DOI: 10.5281/zenodo.18549146
 
