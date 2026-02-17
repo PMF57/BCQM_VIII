@@ -1,0 +1,27 @@
+BCQM_VII_c knee contour — refinement + high-n bracket extension
+
+Run from ~/Desktop where you have: bcqm_vii_cloth/, configs_stage3_knee_contour/, csv_s3kc/, sweep_test_output/.
+
+Pre-create folders:
+  mkdir -p sweep_test_output/outputs_cloth csv_s3kc
+
+
+Commands (run one block at a time):
+
+python3 -m bcqm_vii_cloth.cli scan --config configs_stage3_knee_contour/vii_c_knee_refine_n0p65_bins20_wstar0p30.yml && \
+python3 bcqm_vii_cloth/analysis/summarise_runs.py --run_dir sweep_test_output/outputs_cloth/vii_c_knee_refine_n0p65_bins20_wstar0p30 --out_dir csv_s3kc --tag vii_c_refine_n0p65_bins20_wstar0p30
+
+python3 -m bcqm_vii_cloth.cli scan --config configs_stage3_knee_contour/vii_c_knee_refine_n0p7_bins20_wstar0p30.yml && \
+python3 bcqm_vii_cloth/analysis/summarise_runs.py --run_dir sweep_test_output/outputs_cloth/vii_c_knee_refine_n0p7_bins20_wstar0p30 --out_dir csv_s3kc --tag vii_c_refine_n0p7_bins20_wstar0p30
+
+python3 -m bcqm_vii_cloth.cli scan --config configs_stage3_knee_contour/vii_c_knee_refine_n0p75_bins20_wstar0p30.yml && \
+python3 bcqm_vii_cloth/analysis/summarise_runs.py --run_dir sweep_test_output/outputs_cloth/vii_c_knee_refine_n0p75_bins20_wstar0p30 --out_dir csv_s3kc --tag vii_c_refine_n0p75_bins20_wstar0p30
+
+python3 -m bcqm_vii_cloth.cli scan --config configs_stage3_knee_contour/vii_c_knee_refine_n0p8_bins20_wstar0p30.yml && \
+python3 bcqm_vii_cloth/analysis/summarise_runs.py --run_dir sweep_test_output/outputs_cloth/vii_c_knee_refine_n0p8_bins20_wstar0p30 --out_dir csv_s3kc --tag vii_c_refine_n0p8_bins20_wstar0p30
+
+python3 -m bcqm_vii_cloth.cli scan --config configs_stage3_knee_contour/vii_c_knee_extend_n0p85_bins20_wstar0p30.yml && \
+python3 bcqm_vii_cloth/analysis/summarise_runs.py --run_dir sweep_test_output/outputs_cloth/vii_c_knee_extend_n0p85_bins20_wstar0p30 --out_dir csv_s3kc --tag vii_c_extend_n0p85_bins20_wstar0p30
+
+python3 -m bcqm_vii_cloth.cli scan --config configs_stage3_knee_contour/vii_c_knee_extend_n0p9_bins20_wstar0p30.yml && \
+python3 bcqm_vii_cloth/analysis/summarise_runs.py --run_dir sweep_test_output/outputs_cloth/vii_c_knee_extend_n0p9_bins20_wstar0p30 --out_dir csv_s3kc --tag vii_c_extend_n0p9_bins20_wstar0p30

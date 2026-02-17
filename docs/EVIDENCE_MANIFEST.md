@@ -79,6 +79,11 @@ This section documents the planned (and then executed) **knee contour** campaign
 N_k(n) defined by **Phi = 0.5** (core fraction crossing) as a function of coherence **n**, and (optionally)
 a companion “lock contour” N_l(n) defined by a chosen threshold on **p_lowQ**.
 
+Run log: RUN_LOG_2026-02-17_VII_c_knee_contour.md (root)
+Outputs: csv/stage3_knee_contour/knee_contour_summary.csv,
+ csv/stage3_knee_contour/lock_contour_summary.csv,
+ and PDFs in figures/stage3_knee_contour/
+
 ### Repo folders (canonical)
 - Configs: `configs_stage3_knee_contour/`
 - Outputs (consolidated CSV artefacts): `csv/stage3_knee_contour/`

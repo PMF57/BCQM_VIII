@@ -1,0 +1,73 @@
+schema_version: vi_spacetime_config_v0.1
+experiment_id: vii_c_knee_refine_n0p7_bins20_wstar0p30
+description: 'BCQM_VII_c knee contour: n=0.7, N=[13, 14, 15]. seeds=20. Light mode; bins=20; hits1 cloth; for knee contour refinement/bracketing.'
+variant: full
+
+engine:
+  mode: v_glue
+
+sizes: [13, 14, 15]
+
+seeds:
+  count: 20
+  start: 111000
+
+scan:
+  n_values: [0.7]
+
+steps_total: 20000
+burn_in_epochs: 5000
+measure_epochs: 15000
+
+W_coh: 100
+
+active_window:
+  hops: 100
+  mode: recency
+
+glue:
+  mapping_mode: linear
+  profile: composite_all
+  profile_axes: [phase_lock, cadence_disorder]
+  axes:
+    shared_bias: {min: 0.0, max: 0.0}
+    phase_lock: {min: 0.0, max: 0.0}
+    domains: {min: 0.0, max: 0.0}
+    cadence_disorder: {min: 1.0, max: 1.0}
+
+space:
+  enabled: true
+  p_reuse_mode: from_n
+  w_star: 0.30
+  beta_junc: 1.5
+  domain_match: true
+  allow_cocreate_merge: false
+  log_island_timeseries: false
+
+crosslinks:
+  allow_junctions: true
+  new_event_policy: unique_per_thread
+
+observables:
+  beta_junc: 1.5
+
+snapshots:
+  enabled: false
+
+cloth:
+  enabled: true
+  bins: 20
+  min_bin_hits: 1
+  min_concurrency: 2
+  w_lock: 0.1
+  include_ledger: false
+  trace_threads: false
+  trace_stride: 1
+
+output:
+  out_dir: sweep_test_output/outputs_cloth/vii_c_knee_refine_n0p7_bins20_wstar0p30
+  timeseries_bins: 20
+  write_timeseries: false
+
+provenance:
+  notes: 'VII_c knee contour run. Summarise to csv_s3kc via summarise_runs.py; then re-run fit_knee_contour.py.'

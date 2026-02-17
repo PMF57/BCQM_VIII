@@ -52,3 +52,5 @@ The paper PDF and official versioned manuscript are archived on Zenodo. This rep
 - Concept DOI: 10.5281/zenodo.18549145
 - Version 1 DOI: 10.5281/zenodo.18549146
 
+Stage-3 VII_c knee contour: see docs/EVIDENCE_MANIFEST.md (VII_c section)
+
