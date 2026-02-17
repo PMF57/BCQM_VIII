@@ -52,5 +52,18 @@ The paper PDF and official versioned manuscript are archived on Zenodo. This rep
 - Concept DOI: 10.5281/zenodo.18549145
 - Version 1 DOI: 10.5281/zenodo.18549146
 
+## BCQM_VII_c — knee contour (Stage-3)
+A Stage-3 sweep campaign mapped the cloth knee contour **Nk(n)** (where Phi crosses 0.5) and an operational lock contour **Nl(n)** (first N where p_lowQ <= 0.05, where defined).
+
+Start here:
+- Evidence index: `docs/EVIDENCE_MANIFEST.md` (VII_c section)
+- Run log: `RUN_LOG_2026-02-17_VII_c_knee_contour.md`
+
+Artefacts:
+- Configs: `configs_stage3_knee_contour/`
+- CSVs: `csv/stage3_knee_contour/`
+- Plots: `figures/stage3_knee_contour/`
+- Fitter: `tools/fit_knee_contour.py`
+
 Stage-3 VII_c knee contour: see docs/EVIDENCE_MANIFEST.md (VII_c section)
 
