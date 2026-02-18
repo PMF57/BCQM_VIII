@@ -1,137 +1,183 @@
-# Evidence Manifest — BCQM VII_b (finite‑N knee + clock metastability sweeps)
+# Evidence Manifest — BCQM VII (Path A / cloth Stage–2)
 
-_Last updated: 9 February 2026_
+_Last updated: 5 February 2026_
 
-The paper PDF and official versioned manuscript are archived on Zenodo (Concept DOI: 10.5281/zenodo.18549145; v1 DOI: 10.5281/zenodo.18549146). This repository contains the code, configs, CSV artefacts, and lab notes supporting the paper.
+This manifest is the **single index** of (i) simulation outputs, (ii) consolidated CSV artefacts, (iii) analysis scripts, and (iv) figure PDFs supporting the BCQM VII Stage–2 “cloth” results (Path A). It is designed to make the work **auditable and reproducible**.
 
-GitHub release : https://github.com/PMF57/BCQM_VII_b/releases/tag/v1.0.0
+Repo layout (as used here):
 
-This manifest indexes the sweep artefacts supporting the Stage‑3 “knee + metastability” result set.
+- `bcqm_vii_cloth/` — engine + analysis scripts
+- `configs_stage2/` — Stage–2 run configs (YAML)
+- `configs/` — shared / legacy configs (if used)
+- `outputs_cloth/` — run directories (one per scan/config)
+- `csv/` — consolidated analysis tables (inputs to figures and paper tables)
+- `figures/` — figure PDFs used by the paper
+- `docs/` — documentation (this manifest, test plans, lab notes)
+- `provenance/` — provenance notes, hashes, trim lists
+- `pyproject.toml` — build metadata
+- `TRIM_MANIFEST.json` — list of artefacts included/excluded when trimming for release
 
-## 1) Configs (inputs)
-All configs are in `sweep_test_configs/`.
+---
 
-Key families:
-- Broad sweep:
-  - `sweep_N1_128_hits1_x10_bins20_n0p8_light.yml`
-  - `sweep_N32_128_hits1_x10_bins20_n0p8_heavy.yml`
-- Knee localisation:
-  - `sweep_N12_48_hits1_x10_bins20_n0p8_heavy.yml`
-  - `sweep_N21_24_hits1_x10_bins20_n0p8_heavy.yml`
-- 20‑seed metastability confirmations:
-  - `sweep_N22_hits1_x10_bins20_n0p8_20seeds_heavy.yml`
-  - `sweep_N23_hits1_x10_bins20_n0p8_20seeds_heavy.yml`
-  - `sweep_N24_hits1_x10_bins20_n0p8_20seeds_heavy.yml`
-  - `sweep_N28_hits1_x10_bins20_n0p8_20seeds_heavy.yml`
-- Robustness:
-  - `sweep_minconc3_N22_28_n0p8_bins20_wstar0p30_light.yml` (control: min_concurrency=3 extraction-definition check)
-  - `sweep_bins10_N22_28_n0p8_wstar0p30_light.yml`
-  - `sweep_bins20_N22_28_n0p7_wstar0p30_light.yml`
-  - `sweep_bins20_N22_28_n0p8_wstar0p25_light.yml`
-  - `sweep_bins20_N22_28_n0p8_wstar0p35_light.yml`
-  - (optional) `sweep_bins20_N22_28_n0p9_wstar0p30_light.yml`
-  - (optional) `sweep_n0p7_knee_smallN_bins20_wstar0p30_light.yml`
+## 1) Simulation outputs (source artefacts)
 
-## 2) Local run outputs (not committed)
-Raw run outputs are stored locally under:
-- `sweep_test_output/outputs_cloth/<experiment_id>/`
-and contain `RUN_METRICS_*.json` files.
+### 1.1 Baseline ensemble (pivot/baseline)
+- Run directory (example used throughout):
+  - `outputs_cloth/ensemble_W100_N4N8_hits1_x10_bins20/`
+- Scope:
+  - `N ∈ {4, 8}`, `n ∈ {0.4, 0.8}`, `W_coh = 100`, hits1, x10 epoch, bins=20
+- Contents:
+  - per-seed run metrics (e.g. `RUN_METRICS_*.json`)
+  - (optionally) timeseries and snapshot artefacts depending on config
 
-These are intentionally not committed to keep the repo small.
+### 1.2 A3 scale-ups (high-coherence stress test)
+- `N=16`:
+  - `outputs_cloth/gateA3_N16_*` (exact folder name depends on config tag)
+- `N=32`:
+  - `outputs_cloth/gateA3_N32_*` (exact folder name depends on config tag)
 
-## 3) CSV artefacts (outputs)
-All committed CSVs are in `csv/`.
+### 1.3 Repeatability runs (repA/repB)
+Purpose: check whether mesoscopic claims are repeatable across independent seed ranges.
 
-Types:
-- Control (min_concurrency=3): `minconc3_n0p8_bins20_wstar030_run_summary.csv` and `minconc3_n0p8_bins20_wstar030_ballgrowth_pairwise_N*.csv`.
-- `*_run_summary.csv` — per‑run scalars (Phi, Q_clock, counts, etc.)
-- `*_ballgrowth_pairwise.csv` — global pairwise dL2 with N_a/N_b (patched format)
-- `*_ballgrowth_pairwise_N<NN>_n<nn>.csv` — within‑N pairwise dL2 (190 rows for 20 seeds)
+- `outputs_cloth/gateA3_N32_hits1_x10_bins20_n0p8_repA/`
+- `outputs_cloth/gateA3_N32_hits1_x10_bins20_n0p8_repB/`
 
-Key compiled comparisons:
-- `robustness_all_conditions_summary_N22_28.csv`
-- `robustness_phi_pivot.csv`
-- `robustness_plowQ_pivot.csv`
+### 1.4 Turnover / stationarity experiments (Stage–3 sandbox; **not** part of BCQM VII paper)
+These are exploratory. Keep them quarantined from production outputs where possible.
 
-## 4) Notes / documentation
-- `docs/BCQM_lab_note_sweeps_knee_metastability_2026-02-06_v0.1.tex`
-- `docs/BCQM_lab_note_candidate_IV_b_sweeps_and_pipeline_2026-02-06_v0.1.tex`
-- `docs/BCQM_robustness_panel_note_v0.2_2026-02-06.tex` (and PDF)
+- Outputs written under `csv/turnover/` (if run in-repo)
+- Scripts live in a sandbox folder (recommended), or temporarily under `bcqm_vii_cloth/analysis/` during development
 
-## 5) Rebuild recipe (minimal)
-Run a config:
+---
+
+## 2) Consolidated CSV artefacts (paper-facing tables)
+
+All figures and paper summaries should be traceable to CSV files under `csv/`.
+
+### 2.1 Partition stability (Gate 1 / robustness)
+- `csv/louvain_resolution_sweep_summary.csv`
+
+### 2.2 Super-graph stability summary (Gates 1–3)
+- `csv/pivot_gates_1_2_3_summary.csv`
+
+### 2.3 Ball growth / effective exponent on the super-graph (Test 2.4)
+- `csv/pivot_base/pivot_supergraph_deff_d_eff_runs.csv`
+- (optional) `csv/pivot_base/pivot_supergraph_deff_d_eff_summary.csv`
+
+### 2.4 Curvature proxy (Test 2.3)
+- `csv/curvature/curvature_pivot_core_supergraph_curvature_runs.csv`
+- `csv/curvature/curvature_pivot_all_supergraph_curvature_runs.csv`
+
+### 2.5 Spectral dimension (Test 2.1; optional / finite-size dominated)
+- `csv/spectral_dim/pivot_core_exact_spectral_dim_curves.csv`
+- (optional) `csv/spectral_dim/pivot_core_exact_spectral_dim_summary.csv`
+
+### 2.6 Thread localisation (Gate 4 / Test 3.1)
+- `csv/gate4/gate4_n0p4_all_all_hopdist_seedwise.csv`
+- `csv/gate4/gate4_n0p8_all_all_hopdist_seedwise.csv`
+- (other tagged gate4 outputs may exist under `csv/gate4/`)
+
+### 2.7 A3 scale-ups (N=16 / N=32 health + stability summaries)
+- `csv/gateA3_N16/gateA3_N16_run_summary.csv`
+- `csv/gateA3_N32/gateA3_N32_run_summary.csv`
+
+### 2.8 Repeatability comparison (repA vs repB)
+- `csv/repeatability/repeatability_compare_table.csv`
+- (optional) `figures/fig_repeatability_repA_vs_repB.pdf` (lab-note artefact)
+
+---
+
+## 3) Figure PDFs (paper artefacts)
+
+### 3.1 Schematics
+Generated by the schematic script (see §4):
+- `figures/fig01_bedsheet.pdf`
+- `figures/fig02_stage2_pipeline.pdf`
+
+### 3.2 Data-driven figures (from CSV)
+Generated by the CSV figure script (see §4):
+- `figures/fig03_partition_stability.pdf`
+- `figures/fig04_supergraph_summary_stability.pdf`
+- `figures/fig05_ballgrowth_deff.pdf`
+- `figures/fig06_forman_curvature_summary.pdf`
+- `figures/fig07_spectral_dimension_curves.pdf`
+- `figures/fig08_localisation_hopdist_stacked.pdf`
+- `figures/fig09_scaling_core_fraction_qclock.pdf`
+
+---
+
+## 4) Rebuild commands (reproducibility recipes)
+
+> Run these from repo root. Adjust config names / run directories if you changed tags.
+
+### 4.1 Run a Stage–2 scan (simulation)
+Example (baseline or A3 config):
 ```bash
-python3 -m bcqm_vii_cloth.cli scan --config sweep_test_configs/<CONFIG>.yml
+python3 -m bcqm_vii_cloth.cli scan --config configs_stage2/<CONFIG>.yml
 ```
 
-Summarise:
+### 4.2 Summarise runs to CSV (run health + cloth counts)
+Example (per run dir):
 ```bash
-python3 bcqm_vii_cloth/analysis/summarise_runs.py \
-  --run_dir sweep_test_output/outputs_cloth/<RUN_DIR> \
-  --out_dir csv --tag <TAG>
+python3 bcqm_vii_cloth/analysis/summarise_runs.py   --run_dir outputs_cloth/<RUN_DIR>   --out_dir csv/<TARGET_DIR> --tag <TAG>
 ```
 
-Ensure `summarise_runs.py` is the patched version described in `PROVENANCE.md` if you want per‑N pairwise files.
+### 4.3 Gate 4 localisation (hop distances on community cloth)
+Example:
+```bash
+python3 bcqm_vii_cloth/analysis/gate4_thread_localisation.py   --run_dir outputs_cloth/<RUN_DIR>   --out_dir csv/gate4 --tag <TAG>   --partition_source all --supergraph_source all --resolution 1.0
+```
+
+### 4.4 Generate figure PDFs (matplotlib)
+Schematics:
+```bash
+python3 make_figs_01_02_schematics.py
+```
+CSV-driven figures:
+```bash
+python3 make_figs_03_09_from_csv.py
+```
+
+### 4.5 Repeatability (repA vs repB)
+After generating repA and repB run summaries + gate4 hop CSVs:
+```bash
+python3 repeatability_compare.py
+```
+
+---
+
+## 5) Provenance and trimming
+
+- `provenance/` contains provenance notes/hashes as maintained during development.
+- `TRIM_MANIFEST.json` records which artefacts are included/excluded when trimming the repo for release.
+
+Recommendation: when publishing (Zenodo), include:
+- the exact manuscript `.tex` and `bcqm_master_refs.bib`
+- `figures/*.pdf`
+- `configs_stage2/*.yml` for runs referenced in the paper
+- `csv/` tables used by the paper
+- this `docs/EVIDENCE_MANIFEST.md`
+- a short `provenance/` note describing the trimmed set
+
+---
+
+## 6) Notes / conventions
+
+- File names above reflect the current BCQM VII pipeline; if you rename tags, update this manifest.
+- Where a test is explicitly labelled “optional / non-blocking” (e.g. spectral dimension), keep the CSV artefacts for completeness but do not overinterpret them.
 
 ## BCQM_VII_c — Knee contour sweeps (Stage-3)
 
-This section documents the planned (and then executed) **knee contour** campaign: mapping the cloth knee
-N_k(n) defined by **Phi = 0.5** (core fraction crossing) as a function of coherence **n**, and (optionally)
-a companion “lock contour” N_l(n) defined by a chosen threshold on **p_lowQ**.
+This section documents the Stage-3 knee contour evidence set (tag: vii_c-v1.0), including the bootstrap CI plots.
 
-	•	Zenodo code/archive DOI (v1.0.0): 10.5281/zenodo.18671297
-	•	release tag: vii_c-v1.0
-	•	17/02/2026
-
-Code snapshot : 173670f4107dbb8d02939328c7bd5f976e3bd479 (main)
-
-Run log: RUN_LOG_2026-02-17_VII_c_knee_contour.md (root)
-Outputs: csv/stage3_knee_contour/knee_contour_summary.csv,
- csv/stage3_knee_contour/lock_contour_summary.csv,
- and PDFs in figures/stage3_knee_contour/
-
-### Repo folders (canonical)
+Artefacts (committed):
 - Configs: `configs_stage3_knee_contour/`
-- Outputs (consolidated CSV artefacts): `csv/stage3_knee_contour/`
-- Figures (optional): `figures/stage3_knee_contour/`
-- Run logs: `provenance/RUN_LOG_YYYY-MM-DD_VII_c_knee_contour.md`
+- Consolidated CSVs: `csv/stage3_knee_contour/` (including `knee_contour_summary.csv` and `lock_contour_summary.csv`)
+- Figures: `figures/stage3_knee_contour/knee_contour.pdf`, `figures/stage3_knee_contour/lock_contour.pdf`
+- Bootstrap CI summaries: `figures/stage3_knee_contour/knee_contour_bootstrap.csv` and `figures/stage3_knee_contour/lock_contour_bootstrap.csv`
+- Plot script (CI bands; point-estimate markers): `tools/make_vii_c_errorbar_plots_bootstrap_v2.py`
+- Run log: `RUN_LOG_2026-02-17_VII_c_knee_contour.md` (repo root)
 
-### Local working folders (your Desktop)
-You mentioned using:
-- `configs_stage3_knee_counter/` (local Desktop working folder)
-- `csv_s3kc/` (local Desktop working folder)
-
-After each batch run:
-1) copy the YAML configs into the repo folder `configs_stage3_knee_contour/`
-2) copy consolidated CSV outputs into `csv/stage3_knee_contour/`
-3) add/update a run log under `provenance/`
-4) update the checklist below.
-
-### Checklist (fill in as you go)
-**Scaffold commit**
-- [ ] Added repo folders `configs_stage3_knee_contour/` and `csv/stage3_knee_contour/`
-- [ ] Added `docs/stage3_knee_contour_README.md`
-- [ ] Added/updated this section
-
-**Runs executed**
-- [ ] n-values covered: (list)
-- [ ] N bracketing strategy used: (describe)
-- [ ] Seed counts per point: (e.g. 10 for bracket, 20 for refine)
-
-**Artefacts committed (CSV)**
-- [ ] `csv/stage3_knee_contour/*_run_summary.csv`
-- [ ] `csv/stage3_knee_contour/knee_contour_summary.csv` (N_k vs n, uncertainty)
-- [ ] `csv/stage3_knee_contour/lock_contour_summary.csv` (optional)
-- [ ] `csv/stage3_knee_contour/README.md` (optional index)
-
-**Run logs**
-- [ ] `provenance/RUN_LOG_YYYY-MM-DD_VII_c_knee_contour.md` (at least one)
-
-**Figures (optional)**
-- [ ] `figures/stage3_knee_contour/knee_contour.pdf`
-- [ ] `figures/stage3_knee_contour/lock_contour.pdf`
-
-### Notes
-- Do **not** commit raw `outputs_cloth/` directories.
-- Commit only configs, consolidated CSV artefacts, small figures, and run logs.
-- Keep BCQM VII and BCQM_VII_b results locked; VII_c is a new Stage-3 evidence set.
+Notes:
+- Raw run outputs are kept local and are not committed.
+- Use “finite-N crossover contour” language (not thermodynamic phase transition).
