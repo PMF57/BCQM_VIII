@@ -18,4 +18,4 @@ BCQM_VIII begins here (first commit made after importing the BCQM_VII_b history)
 
 ## Policy
 - No history rewrite.
-- All BCQM_VIII Stage-3 work begins after the baseline commit (this file’s commit and later).
+- All BCQM_VIII Stage-3 work begins at (and after) the provenance anchor commit above.
