@@ -1,0 +1,603 @@
+% Version: v0.3.4 (table left-aligned; breakable field names)
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{parskip}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{xurl}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+
+%------------------------------------------------------------------
+% hyperref bookmark hygiene (avoid warnings from tokens/macros)
+%------------------------------------------------------------------
+\pdfstringdefDisableCommands{%
+  \def\texttt#1{#1}%
+  \def\detokenize#1{#1}%
+  \def\textunderscore{_}%
+}
+
+
+\title{BCQM Stage--3 Working Note:\\[4pt]
+Logging Specification for Causal and Metric
+Graph Construction}
+\author{Peter M.~Ferguson\\
+\textit{Independent Researcher}}
+\date{26 February 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Stage--2 BCQM simulations established a stable spatial cloth
+(community super--graph $G_1$) and demonstrated an empirical
+decoupling between the spatial crossover contour $N_k(n)$ and
+the temporal lock contour $N_\ell(n)$.
+Exploratory Stage--3 work revealed that extracting meaningful
+causal and metric graph objects ($G_t$ and $G_2$) from
+existing Stage--2 logs is problematic: the available data were
+designed for cloth diagnostics and lack the resolution,
+directional coverage, and temporal granularity required for
+genuine causal and metric analysis.
+This note steps back from the data--driven approach and
+defines, from first principles, what $G_t$ and $G_2$ should
+be as physical objects, what observables are required to
+construct them, and what the simulation kernel must log to
+support those constructions.
+This specification has been reviewed and incorporates
+engineering refinements from that review.
+It forms the basis for Stage--3 run design and the
+implementation brief for the updated logging module.
+\end{abstract}
+
+%------------------------------------------------------------------
+\section{Background and motivation}
+%------------------------------------------------------------------
+
+The Stage--2 programme produced two empirically distinct
+finite--size crossover contours at fixed coherence $n$:
+\begin{itemize}
+    \item the \emph{spatial knee} $N_k(n)$, defined by the
+          cloth core fraction
+          $\Phi = N_\mathrm{core}/N_\mathrm{total}$
+          crossing $0.5$; and
+    \item the \emph{temporal lock contour} $N_\ell(n)$,
+          defined by the low--$Q_\mathrm{clock}$ tail
+          probability falling below $0.05$.
+\end{itemize}
+These contours do not coincide: temporal coherence survives
+well into regimes of spatial fragmentation.
+This decoupling is the central empirical result motivating
+Stage--3: space and time emerge as parallel, not subordinate,
+structures.
+
+Attempts to extract causal and metric graph objects from
+existing Stage--2 logs encountered three recurring obstacles:
+\begin{enumerate}
+    \item \textbf{Logging granularity.}
+          Existing logs record only end--of--bin events.
+          Intra--bin causal structure is integrated out,
+          making directed flow between events unresolvable
+          below the bin scale.
+    \item \textbf{Sparse coverage.}
+          Ledger--derived adjacency is a forest under natural
+          thresholds: time--tagged edges cover only
+          $0.4$--$0.5\%$ of the cyclic cloth core graph.
+          Loop--based diagnostics (holonomy) are therefore
+          undefined.
+    \item \textbf{Spatial contamination of temporal objects.}
+          The natural node set for $G_t$ (the community
+          partition from the spatial cloth) imports spatial
+          structure into what should be an independent
+          temporal construction.
+          A genuinely independent $G_t$ requires a
+          clock--native node definition.
+\end{enumerate}
+This specification resolves all three issues by defining the
+required observables from the physics outward and deriving
+the logging requirements from those definitions.
+
+%------------------------------------------------------------------
+\section{Physical definitions}
+%------------------------------------------------------------------
+
+\subsection{The causal graph Gt: a clock--native construction}
+
+$G_t$ is intended to represent the macroscopic causal
+structure of the system \emph{without reference to the
+spatial cloth}. Its definition therefore rests on the clock
+and thread--transition structure alone.
+
+\paragraph{Nodes.}
+A node of $G_t$ is a \emph{clock state}: a group of threads
+sharing a common clock--phase bin at a given measurement
+step. At each measurement epoch $\tau$ the $N$ active
+threads are partitioned into groups $\{T_a(\tau)\}$
+according to their current $v_\mathrm{glue}$ clock phase,
+binned post--hoc into $M_\phi$ equal--width phase bins
+covering $[0,2\pi)$. A node is the pair $(a,\tau)$,
+representing phase bin $a$ at epoch $\tau$.
+
+This definition is independent of the spatial community
+partition. The spatial communities enter only if one wishes
+to study how clock--state nodes \emph{relate} to spatial
+communities, which is a diagnostic question, not a
+definitional one.
+
+\paragraph{Phase binning and circular boundaries.}
+Because clock phase is a circular ($U(1)$) quantity, bin
+boundaries must be handled with care: a thread at phase
+$0.01$ and a thread at $2\pi - 0.01$ are physically nearly
+synchronised but will fall in opposite linear bins. Bin
+assignment should use circular statistics; in practice the
+analysis scripts should allow for dynamically centring bins
+around the mean order parameter of the core to avoid
+spurious boundary artefacts. The simulation logs raw
+continuous phases (Section~3.1); the choice of $M_\phi$ and
+any centring convention are therefore deferred entirely to
+the analysis stage and do not appear in the simulation
+config.
+
+\paragraph{Directed edges.}
+An edge $(a,\tau) \to (b,\tau+\delta)$ exists if at least
+one thread transitions from phase bin $a$ at epoch $\tau$
+to phase bin $b$ at epoch $\tau+\delta$, for a chosen
+temporal resolution $\delta$. The natural edge weight is the
+transition count. For a first implementation $\delta=1$
+epoch is sufficient; coarser choices ($\delta$ = bin width)
+reproduce a mesoscopic version comparable to the
+bin--endpoint $G_t$ explored in Stage--3 VII\_d.
+
+\paragraph{DAG property.}
+If the clock advances monotonically (guaranteed by the
+$v_\mathrm{glue}$ construction), choosing $\delta > 0$
+ensures $G_t$ is a DAG by construction.
+
+\paragraph{Physical interpretation.}
+$G_t$ encodes how clock coherence propagates: a dense,
+narrow $G_t$ (threads mostly staying in the same phase bin)
+corresponds to high temporal coherence; a diffuse, broad
+$G_t$ (threads spreading across phase bins) corresponds to
+clock metastability. $G_t$ is therefore the natural object
+for studying the temporal lock transition.
+
+\subsection{The metric graph G2: a distance--native construction}
+
+$G_2$ is the metric counterpart to the topological cloth
+$G_1$. Where $G_1$ encodes connectivity, $G_2$ encodes
+distance in an operationally meaningful sense.
+
+\paragraph{Nodes.}
+The nodes of $G_2$ are mesoscopic communities defined by the
+Louvain partition on the cloth core graph, plus a single
+macroscopic \textbf{Halo node} (assigned ID $-1$). Any
+event present in \texttt{cloth\_trace} but absent from the
+Louvain partition of the cloth core (i.e.\ a singleton or
+disconnected event) is assigned to the Halo node. This
+prevents the community count $K$ from exploding at large $N$
+(where outside--only singleton transitions dominate), keeps
+the transition matrix compact, and provides a clean single
+node for Core$\to$Halo and Halo$\to$Core causal--feedback
+diagnostics.
+
+\textit{Note:} the Halo node ($-1$) is deliberately excluded
+from geometric diagnostics (diffusion distance, Ricci
+curvature, triangle--inequality tests) since it is a
+catch--all bookkeeping node, not a spatial community.
+
+\paragraph{Distance definition.}
+The edge weight between communities $C_A$ and $C_B$ in
+$G_2$ is a derived \emph{distance}, not a raw transition
+count. Two natural choices are:
+\begin{enumerate}
+    \item \textbf{Diffusion distance.}
+          Define the random--walk transition matrix $P_{ij}$
+          on $G_1$ (row--normalised flow weights, including
+          self--loops; see Section~3.2). The diffusion
+          distance between $C_A$ and $C_B$ at diffusion
+          time $s$ is
+          \[
+              d_s(C_A,C_B)
+              =
+              \left(
+                  \sum_k
+                  \frac{(P^s_{Ak} - P^s_{Bk})^2}{\phi_k}
+              \right)^{1/2},
+          \]
+          where $\phi_k$ is the stationary distribution
+          of the random walk. This distance respects cluster
+          structure and is robust to small perturbations.
+    \item \textbf{Spectral embedding distance.}
+          Embed communities into the eigenspace of the $G_1$
+          graph Laplacian using the leading $d$ non--trivial
+          eigenvectors, then measure Euclidean distance in
+          that embedding. The effective dimension
+          $d_\mathrm{eff}$ has a natural interpretation as
+          the number of significant eigenvectors.
+\end{enumerate}
+Both should be computed and compared in Stage--3.
+
+\paragraph{Physical interpretation.}
+$G_2$ is the object on which geometric diagnostics are
+meaningful: Ricci curvature estimates, triangle--inequality
+tests, and effective--dimension scaling. It is also the
+natural spatial background against which $G_t$ causal
+propagation can be measured (e.g.\ the operational speed of
+causality defined as maximum spatial hop per clock step).
+
+%------------------------------------------------------------------
+\section{What the logs must provide}
+%------------------------------------------------------------------
+
+\subsection{For Gt: per--epoch clock--phase transitions}
+
+To construct $G_t$ with clock--native nodes the simulation
+must log, at each measurement epoch $\tau$:
+
+\begin{enumerate}[label=\textbf{L\arabic*.}]
+    \item \textbf{Per--thread clock phase}
+          $\phi_p(\tau) \in [0,2\pi)$ for each thread
+          $p = 1,\ldots,N$, stored as \texttt{float32}.
+          This is the raw $v_\mathrm{glue}$ phase, not a
+          binned or scalar summary; \texttt{float32}
+          precision is sufficient for mesoscopic clock
+          synchronisation and halves storage compared with
+          \texttt{float64}. If phase--difference precision
+          near lock becomes a concern, \texttt{float64}
+          may be selected via a config option. The choice
+          of $M_\phi$ phase bins is deferred entirely to
+          analysis; the simulation kernel does not need to
+          know about phase bins at all.
+    \item \textbf{Per--thread event ID} $u_p(\tau)$: the
+          event currently occupied by thread $p$ at
+          epoch $\tau$. (Already present in
+          \texttt{cloth\_trace.event\_at\_end} at bin
+          resolution; this extends it to epoch resolution
+          or retains it at the chosen $\delta$.)
+    \item \textbf{Per--thread core mask}
+          $m_p(\tau) \in \{0,1\}$: whether thread $p$ is
+          on the cloth core at epoch $\tau$. (Already
+          present at bin resolution; same extension
+          applies.)
+\end{enumerate}
+
+These three fields, stored at resolution $\delta$, are
+sufficient to construct $G_t$ with any desired phase
+binning and any node definition that is a function of
+clock phase.
+
+\subsection{For G2: per--bin directed community flows}
+
+To construct $G_2$ with well--defined diffusion distances
+the simulation must log at each bin boundary $k$:
+
+\begin{enumerate}[label=\textbf{L\arabic*.},resume]
+    \item \textbf{Directed community flow counts}
+          $F_{ij}(k)$: the number of thread transitions
+          from community $C_i$ at bin $k-1$ to community
+          $C_j$ at bin $k$, stored in sparse form as
+          arrays of \texttt{(src, dst, count)} triples.
+          \textit{Self--loops ($i = j$) must be included.}
+          If a thread remains in the same community between
+          bins, that transition must be tallied; omitting
+          self--loops silently corrupts the
+          row--normalisation of $P_{ij}$ and therefore the
+          stationary distribution $\phi_k$ used in the
+          diffusion distance.
+    \item \textbf{Directed community flow counts
+          (core--only)} $F^c_{ij}(k)$: same as L4,
+          restricted to threads with core mask $= 1$ at
+          both endpoints.
+    \item \textbf{Community occupancy} $n_i(k)$: number
+          of threads in community $C_i$ at bin $k$,
+          required to normalise $F_{ij}(k)$ into a
+          transition matrix $P(k)$.
+    \item \textbf{Community membership map} $\pi$: the
+          mapping from event IDs to community IDs
+          (including Halo assignment for singletons),
+          stored once per run. This ensures
+          reproducibility if community detection
+          parameters change across versions.
+\end{enumerate}
+
+\subsection{For the joint Gt/G2 diagnostic}
+
+\begin{enumerate}[label=\textbf{L\arabic*.},resume]
+    \item \textbf{Spatial distance matrix on $G_1$}:
+          pairwise community distances computed from $G_1$
+          (either graph--hop distance or diffusion distance
+          at a chosen $s$), stored once per run as a
+          symmetric matrix or sparse dictionary. The Halo
+          node ($-1$) is excluded from this matrix.
+\end{enumerate}
+
+%------------------------------------------------------------------
+\section{Logging container: stage3 trace}
+%------------------------------------------------------------------
+
+All new fields are stored under a dedicated top--level
+container \texttt{stage3\_trace} in \texttt{RUN\_METRICS},
+activated by a feature flag
+\texttt{stage3\_trace\_enabled: true/false} in the run
+config. The flag must control only memory allocation and
+file writing; it must never touch the logic that updates
+edge weights or thread states, so that the Stage--2
+baseline remains uncompromised.
+
+The container schema is:
+
+\begin{verbatim}
+"stage3_trace": {
+  "meta": {
+    "stage3_trace_version": "1.2",
+    "code_commit":  "<git hash>",
+    "config_file":  "<filename>",
+    "run_id":       "n{n}_N{N}_seed{seed}",
+    "delta_epochs": <int>,
+    "phase_dtype":  "float32"
+  },
+  "community_partition": {
+    "method":          "louvain",
+    "resolution":      <float>,
+    "num_communities": <int K>,
+    "halo_id":         -1,
+    "node_to_comm":    [c_0, c_1, ..., c_{V-1}]
+  },
+  "clock_phase_by_epoch": [
+    {"epoch": tau,
+     "phase": [phi_0, phi_1, ..., phi_{N-1}]},
+    ...
+  ],
+  "core_mask_by_epoch": [
+    {"epoch": tau,
+     "mask": [m_0, m_1, ..., m_{N-1}]},
+    ...
+  ],
+  "community_flow_by_bin_all": [
+    {"bin": k, "src": [...],
+               "dst": [...], "count": [...]},
+    ...
+  ],
+  "community_flow_by_bin_core": [
+    {"bin": k, "src": [...],
+               "dst": [...], "count": [...]},
+    ...
+  ],
+  "community_occupancy_by_bin_all": [
+    {"bin": k, "comm": [...], "count": [...]},
+    ...
+  ],
+  "community_occupancy_by_bin_core": [
+    {"bin": k, "comm": [...], "count": [...]},
+    ...
+  ],
+  "community_turnover_by_bin_all": [
+    {"bin": k, "comm": [...],
+               "entry": [...], "exit": [...], "stay": [...]},
+    ...
+  ],
+  "community_turnover_by_bin_core": [
+    {"bin": k, "comm": [...],
+               "entry": [...], "exit": [...], "stay": [...]},
+    ...
+  ],
+  "island_trace": {
+    "island_version": "1.0",
+    "definition": {
+      "occ_threshold_frac": <float>,
+      "occ_threshold_count": <int>,
+      "radius_hops": <int>,
+      "matching": "max_overlap"
+    },
+    "comm_to_island_by_bin_all": [
+      {"bin": k, "island_id_by_comm": [i_0, i_1, ..., i_K, i_halo]},
+      ...
+    ],
+    "island_stats_by_bin_all": [
+      {"bin": k, "island": [...],
+                 "num_comm": [...], "occ": [...], "occ_core": [...]},
+      ...
+    ]
+  },
+  "g1_distance_matrix": {
+    "method":    "graph_hop",
+    "comm_ids":  [...],
+    "distances": [[...], ...]
+  }
+}
+\end{verbatim}
+
+%------------------------------------------------------------------
+
+%------------------------------------------------------------------
+\section{Islands and turnover diagnostics}
+%------------------------------------------------------------------
+
+Stage--3 aims to distinguish a persistent cloth geometry object
+from transient ``islands'' (localised, time--varying concentrations
+of activity or coherence). The logging fields above are sufficient to
+construct islands and turnover metrics in post--processing; however,
+for convenience and to reduce repeated recomputation, the
+specification includes two derived outputs (required):
+\texttt{community\_turnover\_by\_bin\_*} and \texttt{island\_trace}.
+
+\subsection{Community--level turnover (derived, required)}
+
+Given the per--bin flow matrices (which must include self--loops),
+community turnover can be derived per bin for each community ID
+(including the Halo node):
+\begin{align}
+\mathrm{entry}_i(k) &= \sum_j F_{j\to i}(k), \\
+\mathrm{exit}_i(k)  &= \sum_j F_{i\to j}(k), \\
+\mathrm{stay}_i(k)  &= F_{i\to i}(k).
+\end{align}
+These quantities support direct ``dynamic turnover'' diagnostics:
+entry/exit asymmetry, persistence within communities, and the
+relationship between turnover and $Q_\mathrm{clock}$ filtering
+(core--only versus all).
+
+\subsection{Islands on the cloth (derived, required)}
+\noindent\textbf{Threshold policy.} The island occupancy threshold must be specified explicitly using one of:
+\begin{itemize}
+\item \texttt{occ\_threshold\_frac}: a fixed fraction of threads (e.g.\ 0.05), or
+\item \texttt{occ\_threshold\_count}: a fixed count of threads (e.g.\ 5), with implied \texttt{occ\_threshold\_frac} $= \texttt{count}/N_{\mathrm{threads}}$.
+\end{itemize}
+The chosen policy is part of the run definition and must be recorded in \texttt{island\_trace.definition}.
+
+
+An ``island'' is defined operationally as a connected cluster of
+communities on the fixed cloth core graph whose occupancy exceeds a
+chosen threshold in a given bin. A minimal construction is:
+\begin{enumerate}[label=(\alph*)]
+\item choose an occupancy threshold (e.g.\ fraction of threads),
+\item select the set of communities above threshold at bin $k$,
+\item connect two selected communities if their $G_1$ hop distance is
+      at most a small radius (e.g.\ 1 or 2),
+\item take connected components as islands.
+\end{enumerate}
+
+Island turnover is then quantified by tracking these components across
+bins via maximum overlap of member communities (stable island IDs),
+and reporting per--island occupancy, size, and entry/exit rates.
+This diagnostic explicitly separates:
+\begin{itemize}
+\item \emph{persistent cloth}: the underlying $G_1$ geometry and its
+      distance matrix; from
+\item \emph{dynamic islands}: time--varying occupancy clusters living
+      on that cloth.
+\end{itemize}
+
+The optional \texttt{island\_trace} block records the per--bin
+community--to--island mapping and island summary statistics. It is
+intended as a compact, audit--friendly intermediate object for Stage--3
+analysis scripts.
+
+
+\section{Run design implications}
+%------------------------------------------------------------------
+
+\subsection{Storage estimates}
+
+For $N=32$, $B=20$ bins, $K\approx 30$ Louvain communities
+plus the Halo node, storing phases at bin resolution
+($\delta =$ bin width):
+\begin{itemize}
+    \item \texttt{clock\_phase\_by\_epoch}:
+          $20 \times 32 \times 4$~bytes (\texttt{float32})
+          $\approx 2.5\,\mathrm{kB}$ per run.
+    \item \texttt{community\_flow\_by\_bin\_all}: at most
+          $(K+1)^2 \times B \approx 31^2 \times 20
+          = 19{,}220$ triples; in sparse form well under
+          $100\,\mathrm{kB}$ per run.
+    \item \texttt{g1\_distance\_matrix}:
+          $K^2 = 900$ floats $\approx 7\,\mathrm{kB}$.
+\end{itemize}
+Total \texttt{stage3\_trace} overhead is well under
+$200\,\mathrm{kB}$ per run, compared with the
+${\sim}\,23\,\mathrm{MB}$ existing \texttt{RUN\_METRICS}
+files. Even at $N=1024$ (future scaling), per--epoch phase
+logging at \texttt{float32} would add only
+${\sim}\,80\,\mathrm{MB}$ per seed: easily manageable.
+
+\subsection{Recommended initial run set}
+
+The first Stage--3 runs with \texttt{stage3\_trace} enabled
+should use the $n=0.800$ knee bracket established in
+VII\_c and VII\_d:
+\begin{itemize}
+    \item $n = 0.800$,
+          $N \in \{22,\,24,\,28,\,32\}$
+          (below--knee, near--knee, post--knee, far--post).
+    \item 10 seeds per $(N,n)$ point.
+    \item Bins $= 20$; same epoch schedule as VII\_b/VII\_c.
+    \item \texttt{stage3\_trace\_enabled: true}.
+\end{itemize}
+This gives a seed--robust, cross--regime dataset from which
+$G_t$, $G_2$, Core/Halo causal sectors, and the joint
+metric--causal diagnostic can all be computed. Extension to
+$n = 0.850$ and $n = 0.900$ follows once the pipeline is
+validated at $n = 0.800$.
+
+%------------------------------------------------------------------
+\section{What this specification does not do}
+%------------------------------------------------------------------
+
+This specification deliberately avoids:
+\begin{itemize}
+    \item Changes to the simulation primitives ($G_0$):
+          the dynamics are unchanged; only the logging is
+          extended.
+    \item Claims about upstream modifications
+          (non--commutative amplitudes, plaquette
+          sensitivity, dynamical exclusion): these remain
+          speculative forward directions, contingent on
+          what $G_t$ and $G_2$ actually show.
+    \item Holonomy diagnostics at event level: the
+          Stage--3 holonomy lab note established that these
+          are not supportable from existing logs; this
+          specification addresses that by designing the
+          right logs from the outset, not by patching
+          analysis scripts.
+\end{itemize}
+
+%------------------------------------------------------------------
+\section{Summary of required logging fields}
+%------------------------------------------------------------------
+
+\begin{table}[ht]
+\noindent
+\footnotesize
+\begin{tabularx}{\linewidth}{@{}p{0.30\linewidth}X p{0.16\linewidth}p{0.10\linewidth}@{}}
+\toprule
+Field & Purpose & Resolution & New? \\
+\midrule
+\nolinkurl{clock_phase_by_epoch}
+    & $G_t$ node definition (\texttt{float32})
+    & Per bin (min) & Yes \\
+\nolinkurl{core_mask_by_epoch}
+    & $G_t$ core filtering
+    & Per bin & Yes \\
+\nolinkurl{community_flow_by_bin_all}
+    & $G_2$ transition matrix (incl.\ self--loops)
+    & Per bin & Yes \\
+\nolinkurl{community_flow_by_bin_core}
+    & $G_2$ core--only matrix
+    & Per bin & Yes \\
+\nolinkurl{community_occupancy_by_bin_all}
+    & $G_2$ normalisation
+    & Per bin & Yes \\
+\nolinkurl{community_occupancy_by_bin_core}
+    & $G_2$ normalisation (core)
+    & Per bin & Yes \\
+\nolinkurl{community_turnover_by_bin_all}
+    & Turnover (entry/exit/stay) per community
+    & Per bin & Yes \\
+\nolinkurl{community_turnover_by_bin_core}
+    & Turnover (core endpoints)
+    & Per bin & Yes \\
+\nolinkurl{island_trace}
+    & Islands on the cloth (IDs and per--bin summaries; includes threshold policy)
+    & Per bin & Yes \\
+\nolinkurl{community_partition}
+    & Reproducibility; Halo node (ID -1) defined here
+    & Once per run & Yes \\
+\nolinkurl{g1_distance_matrix}
+    & Joint diagnostic (Halo excluded)
+    & Once per run & Yes \\
+\bottomrule
+\end{tabularx}
+\caption{Summary of \texttt{stage3\_trace} logging fields and their roles. Self--loops must be included in all flow fields. Turnover and island summaries are required for Stage--3 analyses. The Halo node (ID -1) is excluded from metric diagnostics.}
+\label{tab:fields}
+\end{table}
+
+
+
+\end{document}

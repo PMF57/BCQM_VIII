@@ -1,0 +1,1 @@
+Stage-3 logging spec is the canonical interface for stage3_trace
