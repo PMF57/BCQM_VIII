@@ -28,8 +28,12 @@ sweep_test_output/outputs_cloth/
 sweep_test_output/**/RUN_METRICS_*.json
 sweep_test_output/**/RUN_REPORT*.txt
 
+# Stage-3 run artefacts: keep the folder + its README in git, ignore run contents
+runs_viii/*
+!runs_viii/.gitkeep
+!runs_viii/README.md
+
 # BCQM VIII run artefacts (do not commit)
-runs_viii/
 outputs_viii/
 csv_viii/
 run_logs_viii/
