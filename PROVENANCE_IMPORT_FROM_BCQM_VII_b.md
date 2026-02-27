@@ -8,6 +8,14 @@ This repository (PMF57/BCQM_VIII) was created by importing the full git history 
 - Baseline commit in BCQM_VIII: <PASTE CURRENT COMMIT HASH HERE>
 - Baseline date: 2026-02-27
 
+## BCQM_VIII provenance anchor (start-of-VIII marker)
+
+BCQM_VIII begins here (first commit made after importing the BCQM_VII_b history):
+
+- BCQM_VIII provenance commit: 75b16257e705a96dac20d4609461abdca8c3514e
+- Date: 27 February 2026
+- Meaning: commits at or after this hash are BCQM_VIII work; earlier commits are imported BCQM_VII_b history.
+
 ## Policy
 - No history rewrite.
 - All BCQM_VIII Stage-3 work begins after the baseline commit (this file’s commit and later).
