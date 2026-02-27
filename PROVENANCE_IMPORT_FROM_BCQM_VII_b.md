@@ -5,7 +5,7 @@ This repository (PMF57/BCQM_VIII) was created by importing the full git history 
 
 ## Baseline
 - Imported-from repository: PMF57/BCQM_VII_b
-- Baseline commit in BCQM_VIII: <PASTE CURRENT COMMIT HASH HERE>
+- Baseline commit in BCQM_VIII: 75b16257e705a96dac20d4609461abdca8c3514e
 - Baseline date: 2026-02-27
 
 ## BCQM_VIII provenance anchor (start-of-VIII marker)
